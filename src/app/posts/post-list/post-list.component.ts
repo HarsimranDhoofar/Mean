@@ -29,5 +29,8 @@ private postsSub: Subscription
       this.posts = posts;
     });
   }
+  onDelete(postId :string){
+    this.postsService.deletePost(postId);
+  }
 
 }

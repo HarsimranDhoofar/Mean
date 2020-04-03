@@ -1,7 +1,8 @@
 const express = require('express'); // express not shipped with node.js, can only use this after installing express.
 const bodyParser = require('body-parser');
 const app = express(); // express app is the big chain of middlewares. funnal through which we send request.
-
+const Post = require('./models/post');
+const mongoose =require('mongoose');
 // function in node js ()=>{}
 // app.use((req, res, next)=>{
 //     console.log("first middle ware")
@@ -12,36 +13,52 @@ const app = express(); // express app is the big chain of middlewares. funnal th
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+mongoose.connect("mongodb+srv://harsimran:7XFrPuKYIfqqphjR@cluster0-e4hew.mongodb.net/node-angular?retryWrites=true&w=majority")
+.then(()=>{
+    console.log('connected to database')
+}).catch(()=>{
+    console.log('connection Failed')
+});
+
 app.use('/api/posts',(req, res, next)=>{
-    res.setHeader("Access-Control-Allow-Origin","*");
+    res.setHeader("Access-Control-Allow-Origin","http://localhost:4200"); // need to change this from localhost during deployment 
     res.setHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
     res.setHeader("Access-Control-Allow-Methods","GET, POST, PATCH, DELETE, OPTIONS");
 next();
 });
 app.post('/api/posts',(req, res, next)=>{
-    const post =req.body;
-    console.log(post);
+    const post =new Post({
+        title: req.body.title,
+        content: req.body.content
+    });
+   post.save().then(result =>{
     res.status(201).json({
-        message:"Post added successfully"
+        message:"Post added successfully",
+        postId: result.id        
+    });
+   });
+    
+});
+app.delete('/api/posts/:id',(req, res, next)=>{
+   Post.deleteOne({
+       _id: req.params.id
+   }).then(result=>{
+       console.log(result);
+       res.status(200).json({
+        message:"Post deleted"
     })
+   })
+   
 });
 app.get('/api/posts',(req, res, next)=>{
 //res.send("hello from express!");
-const posts =[
-   {
-       id:'sdgafggad', 
-       title:'First server-side post',
-       content:"This is coming from the server"
-},
-{
-    id:'saffgaerger', 
-    title:'Second server-side post',
-    content:"This is coming from the server"
-}
-];
-res.status(200).json({
+Post.find()
+.then(documents =>{
+   console.log(documents);
+   res.status(200).json({
     message:'Post fetched succesfully!',
-    posts:posts
+    posts:documents
+});
 });
 });
 
