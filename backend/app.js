@@ -2,7 +2,7 @@ const express = require('express'); // express not shipped with node.js, can onl
 const bodyParser = require('body-parser');
 const app = express(); // express app is the big chain of middlewares. funnal through which we send request.
 const Post = require('./models/post');
-const mongoose =require('mongoose');
+const mongoose = require('mongoose');
 // function in node js ()=>{}
 // app.use((req, res, next)=>{
 //     console.log("first middle ware")
@@ -11,56 +11,75 @@ const mongoose =require('mongoose');
 // });
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({
+    extended: false
+}));
 
 mongoose.connect("mongodb+srv://harsimran:7XFrPuKYIfqqphjR@cluster0-e4hew.mongodb.net/node-angular?retryWrites=true&w=majority")
-.then(()=>{
-    console.log('connected to database')
-}).catch(()=>{
-    console.log('connection Failed')
-});
+    .then(() => {
+        console.log('connected to database')
+    }).catch(() => {
+        console.log('connection Failed')
+    });
 
-app.use('/api/posts',(req, res, next)=>{
-    res.setHeader("Access-Control-Allow-Origin","http://localhost:4200"); // need to change this from localhost during deployment 
-    res.setHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type, Accept");
-    res.setHeader("Access-Control-Allow-Methods","GET, POST, PATCH, DELETE, OPTIONS");
-next();
+app.use('/api/posts', (req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200"); // need to change this from localhost during deployment 
+    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS, PUT");
+    next();
 });
-app.post('/api/posts',(req, res, next)=>{
-    const post =new Post({
+app.post('/api/posts', (req, res, next) => {
+    const post = new Post({
         title: req.body.title,
         content: req.body.content
     });
-   post.save().then(result =>{
-    res.status(201).json({
-        message:"Post added successfully",
-        postId: result.id        
+    post.save().then(result => {
+        res.status(201).json({
+            message: "Post added successfully",
+            postId: result.id
+        });
     });
-   });
-    
+
 });
-app.delete('/api/posts/:id',(req, res, next)=>{
-   Post.deleteOne({
-       _id: req.params.id
-   }).then(result=>{
-       console.log(result);
-       res.status(200).json({
-        message:"Post deleted"
+
+app.put('/api/posts/:id', (req, res, next) => {
+    const post = new Post({
+        _id: req.body.id,
+        title: req.body.title,
+        content: req.body.content
+    });
+    Post.updateOne({
+        _id: req.params.id
+    }, post).then(result => {
+        console.log(result);
+        res.status(200).json({
+            message: "Update successful!"
+        })
+    });
+});
+
+app.delete('/api/posts/:id', (req, res, next) => {
+    Post.deleteOne({
+        _id: req.params.id
+    }).then(result => {
+        console.log(result);
+        res.status(200).json({
+            message: "Post deleted"
+        })
     })
-   })
-   
+
 });
-app.get('/api/posts',(req, res, next)=>{
-//res.send("hello from express!");
-Post.find()
-.then(documents =>{
-   console.log(documents);
-   res.status(200).json({
-    message:'Post fetched succesfully!',
-    posts:documents
-});
-});
+app.get('/api/posts', (req, res, next) => {
+    //res.send("hello from express!");
+    Post.find()
+        .then(documents => {
+            console.log(documents);
+            res.status(200).json({
+                message: 'Post fetched succesfully!',
+                posts: documents
+            });
+        });
 });
 
 
-module.exports =app;
+module.exports = app;
