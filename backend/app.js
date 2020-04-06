@@ -1,7 +1,8 @@
 const express = require('express'); // express not shipped with node.js, can only use this after installing express.
 const bodyParser = require('body-parser');
 const app = express(); // express app is the big chain of middlewares. funnal through which we send request.
-const Post = require('./models/post');
+
+const postsRoutes = require("./routes/posts")
 const mongoose = require('mongoose');
 // function in node js ()=>{}
 // app.use((req, res, next)=>{
@@ -22,76 +23,11 @@ mongoose.connect("mongodb+srv://harsimran:7XFrPuKYIfqqphjR@cluster0-e4hew.mongod
         console.log('connection Failed')
     });
 
-app.use('/api/posts', (req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:4200"); // need to change this from localhost during deployment 
-    res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS, PUT");
-    next();
-});
-app.post('/api/posts', (req, res, next) => {
-    const post = new Post({
-        title: req.body.title,
-        content: req.body.content
+    app.use('/api/posts', (req, res, next) => {
+        res.setHeader("Access-Control-Allow-Origin", "*"); // need to change this from localhost during deployment 
+        res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS, PUT");
+        next();
     });
-    post.save().then(result => {
-        res.status(201).json({
-            message: "Post added successfully",
-            postId: result.id
-        });
-    });
-
-});
-
-app.put('/api/posts/:id', (req, res, next) => {
-    const post = new Post({
-        _id: req.body.id,
-        title: req.body.title,
-        content: req.body.content
-    });
-    Post.updateOne({
-        _id: req.params.id
-    }, post).then(result => {
-        console.log(result);
-        res.status(200).json({
-            message: "Update successful!"
-        })
-    });
-});
-
-app.delete('/api/posts/:id', (req, res, next) => {
-    Post.deleteOne({
-        _id: req.params.id
-    }).then(result => {
-        console.log(result);
-        res.status(200).json({
-            message: "Post deleted"
-        })
-    })
-
-});
-app.get('/api/posts/:id', (req, res, next) => {
-  Post.findById(req.params.id).then(post=>{
-      if(post){
-          res.status(200).json(post);
-      }
-      else{
-          res.status(404).json({message:'Post not found!'})
-      }
-  });
-});
-
-
-app.get('/api/posts', (req, res, next) => {
-    //res.send("hello from express!");
-    Post.find()
-        .then(documents => {
-            console.log(documents);
-            res.status(200).json({
-                message: 'Post fetched succesfully!',
-                posts: documents
-            });
-        });
-});
-
-
+    app.use("/api/posts",postsRoutes);
 module.exports = app;
