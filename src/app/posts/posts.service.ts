@@ -29,7 +29,7 @@ private postUpdated = new Subject<Post[]>();
     });
     }
     getPost(id: string){
-    return {...this.posts.find(p => p.id === id)};
+    return this.http.get<{_id:string, title:string, content: string}>("http://localhost:3000/api/posts/"+id);
     }
     getPostUpdateListener(){
     return this.postUpdated.asObservable();
