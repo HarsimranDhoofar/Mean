@@ -1,7 +1,7 @@
 const express = require('express'); // express not shipped with node.js, can only use this after installing express.
 const bodyParser = require('body-parser');
 const app = express(); // express app is the big chain of middlewares. funnal through which we send request.
-
+const path= require('path');
 const postsRoutes = require("./routes/posts")
 const mongoose = require('mongoose');
 // function in node js ()=>{}
@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
     extended: false
 }));
-
+app.use("/images", express.static(path.join("backend/images")));
 mongoose.connect("mongodb+srv://harsimran:7XFrPuKYIfqqphjR@cluster0-e4hew.mongodb.net/node-angular?retryWrites=true&w=majority")
     .then(() => {
         console.log('connected to database')
@@ -29,5 +29,6 @@ mongoose.connect("mongodb+srv://harsimran:7XFrPuKYIfqqphjR@cluster0-e4hew.mongod
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS, PUT");
         next();
     });
+
     app.use("/api/posts",postsRoutes);
 module.exports = app;
